@@ -1,10 +1,13 @@
 import requests
+import json
+
+scores = {}
 
 
 def refactor_sentence(sentence):
     if '&' in sentence:
         sentence = sentence.replace('&quot;', '"').replace('&#039;', "'").replace('&amp;', '&').replace('&lt;',
-                                                                                                        '<').replace(
+                                                                                                          '<').replace(
             '&gt;', '>')
     return sentence
 
@@ -23,16 +26,15 @@ def get_trivia_question():
         options.sort(reverse=True)
         return question, correct_answer, options
     else:
-        print("Failed to retrieve question. Please wait a second.")
+        print("Failed to retrieve question. Please try again later.")
         return None, None, None
 
 
 def display_question(question, options):
     print(refactor_sentence(question))
-    i = 1
-    for option in options:
+
+    for i, option in enumerate(options, start=1):
         print(f"{i}. {option}")
-        i += 1
 
 
 def get_user_answer():
@@ -43,11 +45,11 @@ def get_user_answer():
         return get_user_answer()
 
 
-def check_answer(user_answer, correct_answer_index):
-    return user_answer == correct_answer_index
+def check_answer(user_answer, correct_answer):
+    return user_answer == correct_answer
 
 
-def play_game():
+def play_game(player):
     input("Press Enter to get a new question...")
     question, correct_answer, options = get_trivia_question()
     if question and correct_answer and options:
@@ -55,25 +57,43 @@ def play_game():
         user_answer = get_user_answer()
         if check_answer(user_answer, options.index(correct_answer) + 1):
             print("Correct! Well done!")
+            scores[player] += 1
         else:
             print("Incorrect! The correct answer was:", correct_answer)
+            print(f"Your score is: {scores[player]}")
             print("")
     else:
-        play_game()
+        print("Failed to retrieve question. Please try again later.")
+        play_game(player)
+        return None, None, None
 
 
 def main():
     print("Welcome to the Trivia Game!")
+    print(f"Please insert how many players are going to play:")
+    players = int(input())
+    for i in range(players):
+        print(f"Please insert the name of player {i + 1}:")
+        name = input()
+        scores[name] = 0
     print("Let's start!")
     play_again = True
 
     while play_again:
-        play_game()
+        for player in scores:
+            print(f"{player}, it's your turn!")
+            play_game(player)
+            print("")
         print("Do you want to play another round? (yes/no)")
         response = input().lower()
         play_again = response == "yes" or response == "y"
 
+    print("Game Over!")
+    print("Final Scores:")
+    for player, score in scores.items():
+        print(f"{player}: {score}")
     print("Thank you for playing!")
 
 
-main()
+if __name__ == "__main__":
+    main()
